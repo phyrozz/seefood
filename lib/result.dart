@@ -76,7 +76,17 @@ class _ResultScreenState extends State<ResultScreen> {
       appBar: AppBar(title: const Text('SeeFood', style: TextStyle(fontWeight: FontWeight.bold)), centerTitle: true,),
       body: Column(
         children: [
-          Image.file(File(widget.imagePath)),
+            Container(
+            width: double.infinity,
+            height: 300,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Image.file(
+              File(widget.imagePath),
+              fit: BoxFit.fitHeight,
+            ),
+            ),
           const SizedBox(height: 20),
           if (isLoading)
             const CircularProgressIndicator()
@@ -91,7 +101,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         return ListTile(
                           title: Text(item.food, style: TextStyle(fontWeight: FontWeight.bold),),
                           subtitle: Text(item.description),
-                          trailing: Text('${(item.confidence * 100).toStringAsFixed(1)}%'),
+                          trailing: Text('${(item.confidence * 100).toStringAsFixed(1)}% confidence'),
                         );
                       },
                     ),
