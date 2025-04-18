@@ -25,6 +25,13 @@ class _ResultScreenState extends State<ResultScreen> {
     _uploadImage();
   }
 
+  @override
+  void dispose() {
+    foodItems.clear();
+    isLoading = true;
+    super.dispose();
+  }
+
   Future<void> _uploadImage() async {
     final uri = Uri.parse('https://seefood-api.joshuamalabanan70.workers.dev/api/post');
 
@@ -73,20 +80,23 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SeeFood', style: TextStyle(fontWeight: FontWeight.bold)), centerTitle: true,),
+      appBar: AppBar(
+        title: const Text('SeeFood', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+      ),
       body: Column(
         children: [
-            Container(
+          Container(
             width: double.infinity,
             height: 300,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.transparent,
             ),
             child: Image.file(
               File(widget.imagePath),
               fit: BoxFit.fitHeight,
             ),
-            ),
+          ),
           const SizedBox(height: 20),
           if (isLoading)
             const CircularProgressIndicator()
@@ -98,10 +108,41 @@ class _ResultScreenState extends State<ResultScreen> {
                       itemCount: foodItems.length,
                       itemBuilder: (context, index) {
                         final item = foodItems[index];
-                        return ListTile(
-                          title: Text(item.food, style: TextStyle(fontWeight: FontWeight.bold),),
-                          subtitle: Text(item.description),
-                          trailing: Text('${(item.confidence * 100).toStringAsFixed(1)}% confidence'),
+                        return AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOutCubic,
+                          child: ExpansionTile(
+                            title: Text(
+                              item.food,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.description),
+                                if (item.otherPossibleMatches.isNotEmpty)
+                                  const Text(
+                                    'Tap to expand to see similar matches.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            trailing: Text(
+                              '${(item.confidence * 100).toStringAsFixed(1)}% confidence',
+                            ),
+                            children: item.otherPossibleMatches.map((match) {
+                              return ListTile(
+                                title: Text(match.food),
+                                trailing: Text(
+                                  '${(match.confidence * 100).toStringAsFixed(1)}% confidence',
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         );
                       },
                     ),
